@@ -160,6 +160,7 @@ class MyLogger(Logger):
 
     # TODO: add rotating file handler and timed rotating file handler functionality
 
+# use case
 if __name__ == '__main__':
     log = MyLogger(file='logClass_test.log')
     log.debug('test')
