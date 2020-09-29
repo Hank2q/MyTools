@@ -11,16 +11,18 @@ FORMATS = {'time': '%(asctime)s',  # Human-readable time, By default yyyy-mm-dd 
            'filename': '%(filename)s',  # Filename portion of pathname.
            'level': '%(levelname)s',    # text logging level for the message.
            'levelno': '%(levelno)s',    # Numeric logging level for the message
-           'line': '%(lineno)d',    # Source line number where the logging call was issued.
+           # Source line number where the logging call was issued.
+           'line': '%(lineno)d',
            'msg': '%(message)s',    # The logged message
            'logger': '%(name)s',    # Name of the logger used to log the call.
-           'function': '%(funcName)s',  # Name of function containing the logging call.
+           # Name of function containing the logging call.
+           'function': '%(funcName)s',
            'module': '%(module)s',  # Module (name portion of filename).
            'process': '%(process)d',  # Process ID (if available).
            'processname': '%(processName)s',  # Process name (if available).
            'thread': '%(thread)d',  # Thread ID (if available).
            'threadname': '%(threadName)s'  # Thread name (if available).
-            }
+           }
 
 LEVELS = {'critical': logging.CRITICAL,  # 50
           'error': logging.ERROR,  # 40
@@ -40,12 +42,12 @@ class MyLogger(Logger):
         retrurns the Looger.
 
         if no kwargs are given, returns a logger that will log to the stream with the lowest logging level
-        
+
         kwargs:
             level: can be debug, error, warning, info, critical
-            
+
             format: defaults to a spacific format if none was passed, have to be according to the logging module formatting.
-            
+
             file: log to a file if one was specified
 
             filelevel: sets a different logging level to the file, defaults to the logger level
@@ -60,21 +62,19 @@ class MyLogger(Logger):
         name = name or splitext(basename(argv[0]))[0]
         super().__init__(name)
 
-
         # set the level of the logger, passed as a string to the function and matched from the LEVELS dicitonary,
         # sets an instance variable of level to be used elsewhere without the need of the dictionary
         self.level = LEVELS[level]
         self.setLevel(self.level)
         self.filename = file
 
-
         # creat the format of the messege if passed in form kwarg, defaults to the else statment
         # words in the form kwarg need to match the FORMAT dictionary keys
         if form:
             self.formatter = self.make_formater(form)
         else:
-            self.formatter = logging.Formatter('%(name)s: %(levelname)s: %(message)s')
-
+            self.formatter = logging.Formatter(
+                '%(name)s: %(levelname)s: %(message)s')
 
         # creat a default file handler if a file was passed in and adds the format to it, saves the file handler as an instance variable to give the ability to change it latter by the config_handler method.
         # default file handler form and level are the logger's, unless a filelevel was provided in the kwargs
@@ -117,7 +117,7 @@ class MyLogger(Logger):
             handler.setFormatter(self.make_formater(form))
         else:
             handler.setFormatter(self.formatter)
-        
+
         return handler
 
     def config_handler(self, handler, form=None, level=None):
@@ -129,9 +129,9 @@ class MyLogger(Logger):
             handler.setLevel(LEVELS[level])
 
     def disable(self, level=None):
-        '''disable logging of a certian level, defaults to logger level'''
+        '''disable logging of a certian level, defaults to highest level'''
         if not level:
-            level = self.level
+            level = LEVELS['critical']
         else:
             level = LEVELS[level]
         logging.disable(level)
@@ -143,7 +143,7 @@ class MyLogger(Logger):
     def log_errors(self):
         if self.filename:
             sys.stderr = open(self.filename, 'a')
-            
+
     def __call__(self, msg):
         self.info(msg)
 
@@ -160,12 +160,14 @@ class MyLogger(Logger):
 
     # TODO: add rotating file handler and timed rotating file handler functionality
 
+
 # use case
 if __name__ == '__main__':
     log = MyLogger(file='logClass_test.log')
     log.debug('test')
 
-    log.config_handler(log.default_fh, form='time: logger: line: msg', level='info')
+    log.config_handler(
+        log.default_fh, form='time: logger: line: msg', level='info')
     log.debug('only stream with different format')
     log.info('stream and file different format')
     log.set_handler(file='2ndtest.log', level='info')
